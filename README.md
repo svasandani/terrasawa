@@ -1,4 +1,4 @@
-<h1 align="center">Terra<i>sawa<sup>[1](#def)</sup></i><br>
+<h1 align="center">Terra<i>sawa<sup><a href="#def">1</a></sup></i><br>
 <img src="https://img.shields.io/github/languages/code-size/svasandani/terrasawa" />
 <img src="https://img.shields.io/github/license/svasandani/terrasawa" />
 <img src="https://img.shields.io/github/last-commit/svasandani/terrasawa" />
@@ -7,7 +7,7 @@
 <br>
 A C++ lockless queue for Terraling.
 
-## Running
+# Usage
 - Compile the program
 
     `$ g++ main.cpp -o main.out -pthread`
@@ -15,5 +15,7 @@ A C++ lockless queue for Terraling.
 - Run the program
 
     `$ ./main.out`
+  
+# Footnotes
 
 <a name="def">1</a>: <b>sawa</b>: <i>Swahili</i> concurrent, same. 
