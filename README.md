@@ -6,3 +6,12 @@
 </h1>
 <br>
 A C++ lockless queue for Terraling.
+
+## Running
+- Compile the program
+
+    `$ g++ main.cpp -o main.out -pthread`
+
+- Run the program
+
+    `$ ./main.out`
