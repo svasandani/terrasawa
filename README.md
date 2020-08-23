@@ -7,7 +7,7 @@
 <br>
 A C++ lockless queue for Terraling.
 
-# Usage
+## Usage
 - Compile the program
 
     `$ g++ main.cpp -o main.out -pthread`
@@ -16,6 +16,6 @@ A C++ lockless queue for Terraling.
 
     `$ ./main.out`
   
-# Footnotes
+## Footnotes
 
 <a name="def">1. <i>Swahili</i>; <b>sawa</b>:  concurrent, same.</a>
