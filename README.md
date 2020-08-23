@@ -18,4 +18,4 @@ A C++ lockless queue for Terraling.
   
 # Footnotes
 
-<a name="def">1</a>: <b>sawa</b>: <i>Swahili</i> concurrent, same. 
+<a name="def">1. <i>Swahili</i>; <b>sawa</b>:  concurrent, same.</a>
