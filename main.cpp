@@ -45,7 +45,7 @@ void enqueue(atomic<Node*>* tail, string data) {
     int i = 0;
 
     while(i < 1000) {
-        atomic<Node*> *currentTail = new atomic<Node*>;;
+        atomic<Node*> *currentTail = new atomic<Node*>;
 
         currentTail->store(tail->load());
 
@@ -79,22 +79,35 @@ void enqueue(atomic<Node*>* tail, string data) {
     }
 }
 
-Node* dequeue(Node *sentinel, Node **head) {
-    mhead.lock();
-    msent.lock();
+Node* dequeue(atomic<Node*>* sentinel, atomic<Node*>* tail) {
+    if (sentinel->load()->getNext() == NULL) {
+        return NULL;
+    }
 
-    Node *toReturn = *head;
+    if (sentinel->load()->getNext() == tail->load()) {
+        Node *toReturn = NULL;
 
-    *head = (*head)->getNext();
+        toReturn = sentinel->load()->getNext();
 
-    sentinel->setNext(*head);
+        sentinel->load()->setNext(NULL);
 
-    msent.unlock();
-    mhead.unlock();
+        return toReturn;
+    }
 
-    toReturn->setNext(NULL);
+    while(true) {
+        atomic<Node*> *currentHead = new atomic<Node*>;
 
-    return toReturn;
+        currentHead->store(sentinel->load()->getNext());
+
+        atomic<Node*> *currentNext = currentHead->load()->getNextAtomicP();
+
+        Node *n = currentHead->load();
+        if (sentinel->load()->getNextAtomicP()->compare_exchange_weak(n, currentNext->load())) {
+            return currentHead->load();
+        } else {
+            cout << "Failed on first check" << endl;
+        }
+    }
 }
 
 void print(Node *head) {
@@ -106,9 +119,9 @@ void print(Node *head) {
     }
 }
 
-void doDequeue(Node *sentinel, Node **head) {
+void doDequeue(atomic<Node*>* sentinel, atomic<Node*>* tail) {
     // dequeue(head, tail);
-    cout << dequeue(sentinel, head)->getData() << endl;
+    cout << ">> Successfully dequeued " << dequeue(sentinel, tail)->getData() << endl;
 }
 
 void sayHi(int i) {
@@ -121,8 +134,12 @@ int main() {
 
     tail->store(head);
 
-    Node *sentinel = new Node("");
-    sentinel->setNext(head);
+    atomic<Node*> *sentinel = new atomic<Node*>;
+    
+    Node *sent = new Node("");
+    sent->setNext(head);
+
+    sentinel->store(sent);
 
     enqueue(tail, "next 1");
     enqueue(tail, "next 2");
@@ -130,31 +147,32 @@ int main() {
     enqueue(tail, "next 4");
     enqueue(tail, "next 5");
 
-    print(head);
+    print(sentinel->load()->getNext());
     
-    thread threads[500];
+    thread threads[1000];
 
     for (int i=0; i<500; ++i) {
-        // if (rand() % 3 == 0) {
-        //     threads[i] = thread(doDequeue, sentinel, &head);
-        // } else {
-        //     threads[i] = thread(enqueue, tail, "next " + to_string(i));
-        // } 
-        threads[i] = thread(enqueue, tail, "next " + to_string(i));
+        if (rand() % 3 == 0) {
+            threads[i] = thread(doDequeue, sentinel, tail);
+        } else {
+            threads[i] = thread(enqueue, tail, "next " + to_string(i));
+        } 
     }
 
-    // for (int i=5; i<10; ++i) {
-    //     if (rand() % 3 == 0) {
-    //         threads[i] = thread(enqueue, tail, "next " + to_string(i));
-    //     } else {
-    //         threads[i] = thread(doDequeue, sentinel, &head);
-    //     } 
-    // }
+    for (int i=500; i<1000; ++i) {
+        if (rand() % 3 == 0) {
+            threads[i] = thread(enqueue, tail, "next " + to_string(i));
+        } else {
+            threads[i] = thread(doDequeue, sentinel, tail);
+        } 
+    }
         
 
     for (auto& th : threads) th.join();
 
-    print(head);
+    cout << endl << endl;
+
+    print(sentinel->load()->getNext());
 
     return 0;
 }
