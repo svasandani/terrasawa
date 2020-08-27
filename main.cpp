@@ -44,8 +44,8 @@ void enqueue(atomic<Node*>* tail, string data) {
 
     int i = 0;
 
-    while(i < 5) {
-        atomic<Node*> *currentTail;
+    while(i < 1000) {
+        atomic<Node*> *currentTail = new atomic<Node*>;;
 
         currentTail->store(tail->load());
 
@@ -56,7 +56,6 @@ void enqueue(atomic<Node*>* tail, string data) {
                 Node *o = (*tail).load()->getNext();
                 if (currentNext->compare_exchange_weak(o, n)) {
                     Node *p = currentTail->load();
-                    cout << tail->load() << endl;
                     if (tail->compare_exchange_weak(p, n)) {
                         cout << "Successfully enqueued " << data << endl;
                         break;
@@ -68,7 +67,9 @@ void enqueue(atomic<Node*>* tail, string data) {
                 }
             } else {
                 cout << "Failed on second check" << endl;
-                cout << currentNext->load()->getData() << endl;
+                cout << "current tail is " << tail->load()->getData() << endl;
+                cout << "trying to enqueue " << data << endl;
+                cout << "value at tail is actually " << currentNext->load()->getData() << endl;
                 i++;
             }
         } else {
@@ -110,6 +111,10 @@ void doDequeue(Node *sentinel, Node **head) {
     cout << dequeue(sentinel, head)->getData() << endl;
 }
 
+void sayHi(int i) {
+    cout << "Hi from thread " << i << endl;
+}
+
 int main() {
     Node *head = new Node("head node");
     atomic<Node*> *tail = new atomic<Node*>;
@@ -127,28 +132,29 @@ int main() {
 
     print(head);
     
-    // thread threads[1000];
+    thread threads[500];
 
-    // for (int i=0; i<500; ++i) {
-    //     if (rand() % 3 == 0) {
-    //         threads[i] = thread(doDequeue, sentinel, &head);
-    //     } else {
-    //         threads[i] = thread(enqueue, sentinel, tail, "next " + to_string(i));
-    //     } 
-    // }
+    for (int i=0; i<500; ++i) {
+        // if (rand() % 3 == 0) {
+        //     threads[i] = thread(doDequeue, sentinel, &head);
+        // } else {
+        //     threads[i] = thread(enqueue, tail, "next " + to_string(i));
+        // } 
+        threads[i] = thread(enqueue, tail, "next " + to_string(i));
+    }
 
-    // for (int i=500; i<1000; ++i) {
+    // for (int i=5; i<10; ++i) {
     //     if (rand() % 3 == 0) {
-    //         threads[i] = thread(enqueue, sentinel, tail, "next " + to_string(i));
+    //         threads[i] = thread(enqueue, tail, "next " + to_string(i));
     //     } else {
     //         threads[i] = thread(doDequeue, sentinel, &head);
     //     } 
     // }
         
 
-    // for (auto& th : threads) th.join();
+    for (auto& th : threads) th.join();
 
-    // print(head);
+    print(head);
 
     return 0;
 }
