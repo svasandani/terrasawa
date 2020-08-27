@@ -121,7 +121,13 @@ void print(Node *head) {
 
 void doDequeue(atomic<Node*>* sentinel, atomic<Node*>* tail) {
     // dequeue(head, tail);
-    cout << ">> Successfully dequeued " << dequeue(sentinel, tail)->getData() << endl;
+    Node *d = dequeue(sentinel, tail);
+
+    if (d == NULL) {
+        cout << "!! Nothing to dequeue!" << endl;
+    } else {
+        cout << ">> Successfully dequeued " << d->getData() << endl;
+    }
 }
 
 void sayHi(int i) {
@@ -148,10 +154,14 @@ int main() {
     enqueue(tail, "next 5");
 
     print(sentinel->load()->getNext());
-    
-    thread threads[1000];
 
-    for (int i=0; i<500; ++i) {
+    int i = 0;
+
+    while (true) {
+    
+    thread threads[4096];
+
+    for (int i=0; i<2048; ++i) {
         if (rand() % 3 == 0) {
             threads[i] = thread(doDequeue, sentinel, tail);
         } else {
@@ -159,7 +169,7 @@ int main() {
         } 
     }
 
-    for (int i=500; i<1000; ++i) {
+    for (int i=2048; i<4096; ++i) {
         if (rand() % 3 == 0) {
             threads[i] = thread(enqueue, tail, "next " + to_string(i));
         } else {
@@ -167,12 +177,15 @@ int main() {
         } 
     }
         
-
     for (auto& th : threads) th.join();
 
     cout << endl << endl;
 
     print(sentinel->load()->getNext());
+
+    i++;
+
+    }
 
     return 0;
 }
